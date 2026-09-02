@@ -36,8 +36,14 @@ In development.
 * [x] hybrid exact/LSH detection path
 * [x] dedicated near-duplicate test coverage
 * [x] synthetic near-duplicate benchmark
+* [x] tokenizer-aware input/output length analysis
+* [x] optional `tiktoken` integration
+* [x] optional Hugging Face `tokenizers` integration
+* [x] local Hugging Face `tokenizer.json` support
+* [x] tokenizer-aware total-token metrics
+* [x] configurable context-window checks
+* [x] context-window findings and aggregate metrics
 * [ ] streaming mode for multi-GB datasets
-* [ ] tokenizer-aware length analysis
 * [ ] Hugging Face Dataset support
 * [ ] configurable policies via `corpusguard.yaml`
 
@@ -51,6 +57,30 @@ The scalable near-duplicate implementation uses a hybrid strategy:
 * identical token sets remain handled by exact-duplicate detection rather than near-duplicate detection
 
 The large-corpus path trades exhaustive candidate recall for scalability. LSH can theoretically miss a pair that does not collide in a candidate bucket even when its true Jaccard similarity is above the configured threshold.
+
+### Tokenizer-aware length architecture
+
+Tokenizer-aware analysis is an optional layer and does not add tokenizer dependencies to the base CorpusGuard installation.
+
+The current implementation supports:
+
+* `tiktoken` model names and encodings
+* Hugging Face Hub tokenizers through the `tokenizers` package
+* local Hugging Face `tokenizer.json` files
+* average, p95 and maximum token-length statistics
+* configurable context-window checks
+
+CorpusGuard currently defines the total content-token length of a valid example as:
+
+```text
+input tokens + output tokens
+```
+
+Hugging Face automatically added special tokens are excluded from this calculation.
+
+This is intentionally a content-level pre-flight metric rather than an exact reconstruction of a model's final serialized training sequence. Model-specific chat templates, BOS/EOS tokens, role markers and other formatting overhead are not currently included.
+
+Context-window findings are therefore diagnostic. Tokenizer-aware metrics and context-window findings do not currently modify the deterministic quality score.
 
 ## v0.3 — semantic quality
 
