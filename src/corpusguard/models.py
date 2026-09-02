@@ -37,6 +37,17 @@ class AuditMetrics:
     p95_output_chars: int = 0
     leakage_matches: int = 0
 
+    tokenizer: str | None = None
+    avg_input_tokens: float | None = None
+    avg_output_tokens: float | None = None
+    p95_output_tokens: int | None = None
+    max_output_tokens: int | None = None
+    avg_total_tokens: float | None = None
+    p95_total_tokens: int | None = None
+    max_total_tokens: int | None = None
+    context_window: int | None = None
+    context_window_exceeded_rows: int | None = None
+
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
