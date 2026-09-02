@@ -1,37 +1,63 @@
 [build-system]
-requires = ["hatchling>=1.25"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
-name = "corpusguard"
+name = "corpusguard-audit"
 version = "0.1.0"
 description = "Pre-flight quality and leakage auditor for LLM fine-tuning datasets."
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "Apache-2.0"}
-authors = [{name = "yerbolisaac"}]
-keywords = ["llm", "fine-tuning", "dataset", "data-quality", "machine-learning", "evaluation"]
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [
+  { name = "yerbolisaac" }
+]
+keywords = [
+  "llm",
+  "fine-tuning",
+  "dataset",
+  "data-quality",
+  "machine-learning",
+  "evaluation",
+  "pii",
+  "deduplication",
+  "data-validation",
+]
+
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
-  "License :: OSI Approved :: Apache Software License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Quality Assurance",
 ]
+
 dependencies = [
   "typer>=0.12,<1",
   "rich>=13.7,<15",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "ruff>=0.6"]
+dev = [
+  "pytest>=8",
+  "ruff>=0.6",
+  "build>=1.2",
+  "twine>=5",
+]
 
 [project.scripts]
 corpusguard = "corpusguard.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/yerbolisaac/corpusguard"
+Repository = "https://github.com/yerbolisaac/corpusguard"
+Issues = "https://github.com/yerbolisaac/corpusguard/issues"
+Roadmap = "https://github.com/yerbolisaac/corpusguard/blob/main/ROADMAP.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/corpusguard"]
