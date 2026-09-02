@@ -16,7 +16,10 @@ A clean loss curve cannot tell you that your evaluation examples leaked into tra
 
 ## Quick start
 
+Install CorpusGuard from PyPI:
+
 ```bash
+pip install corpusguard-audit
 pip install -e .
 corpusguard scan examples/demo.jsonl
 ```
