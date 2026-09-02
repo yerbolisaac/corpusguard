@@ -1,0 +1,5 @@
+{"messages":[{"role":"user","content":"Explain why the sky looks blue."},{"role":"assistant","content":"Air molecules scatter shorter blue wavelengths of sunlight more strongly than longer red wavelengths."}]}
+{"prompt":"What is 7 × 8?","completion":"7 × 8 equals 56."}
+{"instruction":"Summarize","input":"Machine learning systems depend strongly on the quality of their training data.","output":"Training-data quality strongly affects machine-learning systems."}
+{"prompt":"Contact support at demo@example.com","completion":"You can also call +7 701 123 45 67 for assistance."}
+{"prompt":"What is 7 × 8?","completion":"7 × 8 equals 56."}

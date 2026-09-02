@@ -1,0 +1,46 @@
+{
+  "dataset": "examples/demo.jsonl",
+  "score": 64,
+  "grade": "D",
+  "metrics": {
+    "rows": 5,
+    "valid_rows": 5,
+    "invalid_rows": 0,
+    "empty_outputs": 0,
+    "short_outputs": 0,
+    "exact_duplicate_groups": 1,
+    "exact_duplicate_rows": 1,
+    "near_duplicate_pairs": 0,
+    "pii_hits": 1,
+    "high_repetition_rows": 0,
+    "latin_chars": 325,
+    "cyrillic_chars": 0,
+    "other_letter_chars": 0,
+    "avg_input_chars": 36.6,
+    "avg_output_chars": 49.4,
+    "p95_output_chars": 101,
+    "leakage_matches": 0
+  },
+  "findings": [
+    {
+      "code": "pii",
+      "severity": "error",
+      "message": "Potential sensitive data: email, phone",
+      "row": 4,
+      "field": null,
+      "sample": null
+    },
+    {
+      "code": "exact_duplicate",
+      "severity": "warning",
+      "message": "Exact duplicate across rows [2, 5]",
+      "row": 2,
+      "field": null,
+      "sample": null
+    }
+  ],
+  "recommendations": [
+    "Deduplicate repeated examples to reduce memorization bias.",
+    "Review and redact potential PII before publishing or training."
+  ]
+}
