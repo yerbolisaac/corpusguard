@@ -1,37 +1,88 @@
 # Roadmap
 
+CorpusGuard is being developed incrementally from a deterministic local dataset auditor toward scalable corpus analysis, semantic quality checks and extensible production integrations.
+
 ## v0.1 — deterministic pre-flight audit
-- JSONL schema normalization
-- exact duplicates
-- dependency-free near-duplicate detection
-- PII pattern checks
-- repetition checks
-- train/eval exact leakage
-- JSON + HTML reports
-- CI score gates
+
+Released.
+
+* [x] JSONL schema normalization
+* [x] OpenAI/chat dataset support
+* [x] prompt/completion dataset support
+* [x] Alpaca instruction/input/output support
+* [x] question/answer dataset support
+* [x] exact duplicate detection
+* [x] dependency-free near-duplicate detection
+* [x] PII pattern checks
+* [x] empty and short output checks
+* [x] repetition checks
+* [x] script distribution metrics
+* [x] train/eval exact leakage
+* [x] deterministic 0–100 quality score
+* [x] A–F quality grade
+* [x] JSON reports
+* [x] standalone HTML reports
+* [x] CI score gates with `--fail-below`
+* [x] PyPI distribution
+* [x] GitHub release workflow
 
 ## v0.2 — scalable corpus analysis
-- MinHash/LSH duplicate search
-- streaming mode for multi-GB datasets
-- tokenizer-aware length analysis
-- Hugging Face Dataset support
-- configurable policies via `corpusguard.yaml`
+
+In development.
+
+* [x] deterministic MinHash signatures
+* [x] LSH candidate generation for scalable near-duplicate search
+* [x] exact Jaccard verification of LSH candidates
+* [x] hybrid exact/LSH detection path
+* [x] dedicated near-duplicate test coverage
+* [x] synthetic near-duplicate benchmark
+* [ ] streaming mode for multi-GB datasets
+* [ ] tokenizer-aware length analysis
+* [ ] Hugging Face Dataset support
+* [ ] configurable policies via `corpusguard.yaml`
+
+### Near-duplicate architecture
+
+The scalable near-duplicate implementation uses a hybrid strategy:
+
+* small corpora use exhaustive pairwise Jaccard comparison
+* large corpora use deterministic MinHash signatures and LSH for candidate generation
+* candidate pairs are verified with exact token-set Jaccard similarity before reporting
+* identical token sets remain handled by exact-duplicate detection rather than near-duplicate detection
+
+The large-corpus path trades exhaustive candidate recall for scalability. LSH can theoretically miss a pair that does not collide in a candidate bucket even when its true Jaccard similarity is above the configured threshold.
 
 ## v0.3 — semantic quality
-- optional local embedding checks
-- topic balance and cluster outliers
-- semantic train/eval leakage
-- answer-consistency checks
-- benchmark contamination packs
+
+Planned.
+
+* [ ] optional local embedding checks
+* [ ] semantic near-duplicate detection
+* [ ] topic balance analysis
+* [ ] cluster outlier detection
+* [ ] semantic train/eval leakage
+* [ ] answer-consistency checks
+* [ ] benchmark contamination packs
 
 ## v0.4 — LLM-native review
-- opt-in local judge adapters
-- rubric-based quality scoring
-- hallucination/evidence checks for grounded datasets
-- human-review queues
 
-## v1.0
-- stable policy schema
-- SARIF/GitHub code-scanning output
-- reproducible audit manifests
-- plugin API for custom checks
+Planned.
+
+* [ ] opt-in local judge adapters
+* [ ] rubric-based quality scoring
+* [ ] hallucination/evidence checks for grounded datasets
+* [ ] human-review queues
+* [ ] configurable judge policies
+* [ ] explicit separation between deterministic and model-based findings
+
+## v1.0 — stable audit platform
+
+Planned.
+
+* [ ] stable policy schema
+* [ ] stable report schema
+* [ ] reproducible audit manifests
+* [ ] SARIF/GitHub code-scanning output
+* [ ] plugin API for custom checks
+* [ ] documented extension interface
+* [ ] backward-compatibility policy

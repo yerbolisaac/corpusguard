@@ -12,11 +12,13 @@ LLM fine-tuning pipelines usually validate whether training *runs*. CorpusGuard 
 
 > **Should this dataset be allowed into a training run at all?**
 
-A clean loss curve cannot tell you that your evaluation examples leaked into training, that hundreds of rows are duplicated, or that private data is sitting in a JSONL file. CorpusGuard provides a deterministic, local pre-flight audit with a single quality score and evidence for every deduction.
+A clean loss curve cannot tell you that your evaluation examples leaked into training, that hundreds of rows are duplicated, or that private data is sitting in a JSONL file.
+
+CorpusGuard provides a local pre-flight audit with a deterministic quality score and evidence for every deduction.
 
 ## Quick start
 
-Install CorpusGuard from PyPI:
+Install the latest released version from PyPI:
 
 ```bash
 pip install corpusguard-audit
@@ -50,19 +52,66 @@ corpusguard scan data/train.jsonl --compare data/eval.jsonl --fail-below 85
 
 Exit code `2` means the quality score fell below the requested threshold.
 
-## What v0.1 checks
+## What CorpusGuard checks
 
 | Check                  | What it catches                                                       |
 | ---------------------- | --------------------------------------------------------------------- |
 | JSON/schema validation | Malformed JSONL and unsupported SFT row shapes                        |
 | Exact duplicates       | Repeated prompt/answer examples                                       |
-| Near duplicates        | Highly overlapping examples using token Jaccard similarity            |
+| Near duplicates        | Highly overlapping examples using token-set Jaccard similarity        |
 | PII patterns           | Emails, phone-like values, 12-digit IDs, card-like numbers            |
 | Empty/short outputs    | Weak supervision and accidental blank labels                          |
 | Repetition             | Degenerate repeated-token answers                                     |
 | Script distribution    | Latin/Cyrillic/other letter counts for multilingual corpus visibility |
 | Split leakage          | Exact examples duplicated between train and eval/test JSONL           |
 | Quality score          | Deterministic 0–100 score with A–F grade                              |
+
+## Scalable near-duplicate detection
+
+The current development version uses a hybrid strategy for near-duplicate detection.
+
+For small corpora, CorpusGuard performs exact pairwise token-set Jaccard comparisons.
+
+For larger corpora, it switches to deterministic MinHash signatures and locality-sensitive hashing (LSH) to generate likely candidate pairs. Candidate pairs are then verified with the exact Jaccard similarity before they are reported.
+
+This keeps the final similarity decision exact for every candidate that LSH surfaces while avoiding an exhaustive comparison of every possible pair in large corpora.
+
+Current defaults:
+
+* exact pairwise path for up to 2,000 unique token sets
+* 128 deterministic MinHash permutations
+* 16 LSH bands
+* 8 signature rows per band
+* exact Jaccard verification of candidate pairs
+* default near-duplicate threshold of `0.92`
+
+MinHash/LSH is a candidate-generation technique. On the scalable path, it can theoretically miss a similar pair that does not collide in an LSH bucket. It is therefore not described as an exhaustive exact search over every possible pair.
+
+### Local synthetic benchmark
+
+A benchmark utility is included at:
+
+```text
+benchmarks/benchmark_near_duplicates.py
+```
+
+Run it with:
+
+```bash
+python benchmarks/benchmark_near_duplicates.py 10000
+```
+
+One local development benchmark produced:
+
+|   Rows | Detection path | Elapsed |
+| -----: | -------------- | ------: |
+|  1,000 | exact pairwise | 1.1651s |
+|  2,000 | exact pairwise | 4.6805s |
+|  2,001 | MinHash/LSH    | 1.7143s |
+|  5,000 | MinHash/LSH    | 4.2887s |
+| 10,000 | MinHash/LSH    | 8.6317s |
+
+These figures are a synthetic development benchmark from one machine, not a universal performance guarantee. Runtime depends on corpus size, token distribution, similarity structure, hardware and Python environment.
 
 ## Supported dataset shapes
 
@@ -132,18 +181,40 @@ Findings: 2
 
 The demo file intentionally contains bad data so the checks are visible.
 
+## Release status
+
+The latest PyPI release is `v0.1.0`.
+
+The `main` branch is currently developing functionality planned for `v0.2.0`, including scalable MinHash/LSH near-duplicate candidate generation.
+
+Until `v0.2.0` is released, installing with:
+
+```bash
+pip install corpusguard-audit
+```
+
+installs the latest published release rather than unreleased development changes from `main`.
+
+Developers who want to test the current repository version can install it from source as described below.
+
 ## Philosophy
 
-CorpusGuard's default checks are **local, deterministic and model-free**. Your training data is not sent to an API. Semantic/LLM-based review can be useful, but it should be an explicit optional layer rather than a hidden dependency in the basic audit path.
+CorpusGuard's default checks are **local, deterministic and model-free**. Your training data is not sent to an API.
+
+Semantic or LLM-based review can be useful, but it should be an explicit optional layer rather than a hidden dependency in the basic audit path.
+
+The core audit should remain inspectable: findings should explain what was detected, and scoring should remain reproducible from the same input and configuration.
 
 ## Current limitations
 
-* Near-duplicate detection in v0.1 is an O(n²) reference implementation intended for small and medium corpora.
-* PII checks are pattern-based and can produce false positives/negatives; they are a review signal, not a compliance guarantee.
+* PII checks are pattern-based and can produce false positives or false negatives; they are a review signal, not a compliance guarantee.
 * Script counts are not language identification.
-* Exact split leakage does not yet detect paraphrased semantic leakage.
+* Exact split leakage does not yet detect paraphrased or semantic leakage.
+* Large-corpus MinHash/LSH candidate generation is probabilistic and can theoretically miss near-duplicate pairs.
+* CorpusGuard does not yet stream multi-GB datasets and currently loads audit data into memory.
+* Length metrics are character-based rather than tokenizer-aware.
 
-See [ROADMAP.md](ROADMAP.md) for the planned scalable and semantic checks.
+See [ROADMAP.md](ROADMAP.md) for planned scalable and semantic checks.
 
 ## Development
 
@@ -166,6 +237,11 @@ pytest -q
 ruff check .
 ```
 
+Run the synthetic near-duplicate benchmark:
+
+```bash
+python benchmarks/benchmark_near_duplicates.py 10000
+```
 
 ## License
 
